@@ -1,5 +1,3 @@
-[toc]
-
 # 1. 介绍
 ## 1.1 排序算法分类
 1. 内部排序: 数据记录在内存中进行排序
@@ -90,7 +88,7 @@ def insertion_sort(arr):
 ```
 
 ## 2.4 希尔排序
-希尔排序，也称递减增量排序算法，是**插入排序的一种更高效的改进版本**。但希尔排序是非稳定排序算法。
+希尔排序，也称递减增量排序算法，是插入排序的一种更高效的改进版本。但希尔排序是非稳定排序算法。
 希尔排序是基于插入排序的以下两点性质而提出改进方法的：
 1. 插入排序在对几乎已经排好序的数据操作时，效率高，即可以达到线性排序的效率
 2. 插入排序一般来说是低效的，因为**插入排序每次只能将数据移动一位**
@@ -122,8 +120,6 @@ def shell_sort(arr):
         gap = gap//2
     return arr
 ```
-
-
 ## 2.5 归并排序
 - 步骤
 1. 申请空间，使其大小为两个已经排序序列之和，该空间用来存放合并后的序列；
@@ -162,7 +158,7 @@ def merge(left, right, merged):
 快速排序使用分治法（Divide and conquer）策略来把一个串行（list）分为两个子串行（sub-lists）。本质上来看，快速排序应该算是在**冒泡排序基础上的递归分治法**。
 快速排序通常明显比其他 Ο(nlogn) 算法更快，因为它的**内部循环（inner loop）可以在大部分的架构上很有效率地被实现出来**。
 - 步骤
-1. 从数列中挑出一个元素，称为 “基准”（pivot）;
+1. 从数列中挑出一个元素，称为 "基准"（pivot）;
 2. 重新排序数列，所有元素比基准值小的摆放在基准前面，所有元素比基准值大的摆在基准的后面（相同的数可以到任一边）。在这个分区退出之后，该基准就处于数列的中间位置。这个称为分区（partition）操作；
 3. 递归地（recursive）把小于基准值元素的子数列和大于基准值元素的子数列排序；
 <div align="center"><img src="./quick.gif" width="80%"></div>
@@ -204,9 +200,166 @@ def qsort(arr):
 ```
 
 ## 2.7 堆排序
+- 步骤
+1. 创建一个大顶堆；
+2. 把堆首（最大值）和堆尾互换；
+3. 把堆的尺寸缩小 1，并调用`heapify()`，目的是把新的数组顶端数据调整到相应位置；
+4. 重复步骤 2，直到堆的尺寸为 1。
+<div align="center"><img src="./heap.gif" width="80%"></div>
+
+- 代码
+```python
+def heapify(arr, n, i): 
+    largest = i  
+    l = 2 * i + 1 
+    r = 2 * i + 2
+
+#     arr = [1,2,3,6,4,3,7,8,13,5]  
+#     print("        {}       ".format(arr[0]))
+#     print("    {}       {}   ".format(arr[1], arr[2]))
+#     print(" {}    {}   {}   {} ".format(arr[3],arr[4],arr[5],arr[6]))
+#     print("{} {} {} ".format(arr[7],arr[8],arr[9]))
+#     print("==========================")
+    
+    if l < n and arr[i] < arr[l]: 
+        largest = l 
+  
+    if r < n and arr[largest] < arr[r]: 
+        largest = r 
+  
+    if largest != i: 
+        arr[i],arr[largest] = arr[largest],arr[i]    
+        heapify(arr, n, largest) 
+  
+
+def heap_sort(arr): 
+    n = len(arr) 
+  
+    # 建立大顶堆：从 n//2-1 逐渐往顶部走 
+    for i in range(n//2-1, -1, -1): 
+        heapify(arr, n, i) 
+  
+    # 排序
+    for i in range(n-1, 0, -1): 
+        # 交换顶部与末端未排序元素
+        arr[i], arr[0] = arr[0], arr[i]
+        heapify(arr, i, 0) 
+        
+    return arr
+```
+
 
 ## 2.8 计数排序
+计数排序是一种非基于比较的排序算法，其空间复杂度和时间复杂度均为O(n+k)，其中k是整数的范围。
+计数排序的核心在于将输入的数据值转化为键存储在额外开辟的数组空间中。作为一种线性时间复杂度的排序，计数排序要求**输入的数据必须是有确定范围的整数**。
+- 步骤
+1. 花O(n)的时间扫描一下整个序列 A，获取最小值 min 和最大值 max
+2. 开辟一块新的空间创建新的数组 B，长度为 (max - min + 1)
+3. 数组 B 中 index 的元素记录的值是 A 中某元素出现的次数
+4. 最后输出目标整数序列，具体的逻辑是遍历数组 B，输出相应元素以及对应的个数
+<div align="center"><img src="./counting.gif" width="80%"></div>
+
+- 代码
+```python
+def counting_sort(arr):
+
+    m = min(arr)
+    # 对负数设置一个offset
+    offset = 0
+    if m < 0:
+        offset = -m
+        for i in range(len(arr)):
+            arr[i] += offset
+    k = max(arr)
+    
+    temp_arr = [0] * (k + 1)
+    
+    for i in range(0, len(arr)):
+        temp_arr[arr[i]] += 1
+
+    for i in range(1, k + 1):
+        # 向后叠加
+        temp_arr[i] += temp_arr[i - 1]
+
+    result_arr = arr.copy()
+
+    for i in range(len(arr) - 1, -1, -1):
+        # arr[i]的排位看temp_arr[arr[i]]的数值，并减一（自身）
+        result_arr[temp_arr[arr[i]] - 1] = arr[i] - offset
+        # 针对重复位情况
+        temp_arr[arr[i]] -= 1 
+    return result_arr
+```
 
 ## 2.9 桶排序
+桶排序(Bucket sort)是一种基于计数的排序算法。
+- 步骤
+1. 设置固定数量的空桶。
+2. 把数据放到对应的桶中。
+3. 对每个不为空的桶中数据进行排序。
+4. 拼接不为空的桶中数据，得到结果。
+<div align="center"><img src="./bucket.gif" width="80%"></div>
+
+- 代码
+```python
+def bucket_sort(arr, bucket_size=5):
+    min_value,max_value = min(arr),max(arr)
+    bucket_count = (max_value-min_value)//bucket_size + 1
+    buckets = [[] for _ in range(bucket_count)]
+    
+    for i in arr:
+        buckets[(i-min_value)//bucket_size].append(i)
+        
+    sorted_list = []
+    for bucket in buckets:
+        sorted_list.extend(next_sort(bucket))
+        
+    return sorted_list
+        
+def next_sort(arr):
+    # 插入排序
+    n = len(arr)
+    for i in range(n):
+        cursor = arr[i]
+        pos = i
+        while pos>0 and arr[pos-1]>cursor:
+            arr[pos] = arr[pos-1]
+            pos -= 1
+        arr[pos] = cursor
+    return arr
+```
 
 ## 2.10 基数排序
+- 步骤
+1. 建立一个10进制的表记录每个数的基数
+2. 从最低位开始，依次进行一次排序
+3. 从最低位排序一直到最高位排序完成以后, 数列就变成一个有序序列
+<div align="center"><img src="./radix.gif" width="80%"></div>
+
+- 代码
+```python
+def radix_sort(arr):
+    '''
+    先按个位排，再按十位排...直到pos>max
+    '''
+    pos = 1
+    max_value = max(arr)
+    while pos<max_value:
+        queue_list = [list() for _ in range(10)]
+        for num in arr:
+            digit_number = num // pos % 10
+            queue_list[digit_number].append(num)
+        index = 0
+        for numbers in queue_list:
+            for num in numbers:
+                arr[index] = num
+                index += 1
+        pos*=10
+    return arr
+```
+
+# 参考
+1. https://mp.weixin.qq.com/s/vn3KiV-ez79FmbZ36SX9lg
+2. https://www.runoob.com/python3/python3-examples.html
+3. https://github.com/keon/algorithms
+4. https://github.com/TheAlgorithms/Python
